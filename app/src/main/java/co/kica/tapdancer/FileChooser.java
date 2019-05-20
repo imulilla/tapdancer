@@ -119,7 +119,8 @@ public class FileChooser extends ListActivity {
                 			ff.getName().endsWith(".PRG") || ff.getName().endsWith(".prg") || 
                 			ff.getName().endsWith(".P00") || ff.getName().endsWith(".p00") || 
                 			ff.getName().endsWith(".T64") || ff.getName().endsWith(".t64") || 
-                			ff.getName().endsWith(".TZX") || ff.getName().endsWith(".tzx") || 
+                			ff.getName().endsWith(".TZX") || ff.getName().endsWith(".tzx") ||
+							ff.getName().endsWith(".TSX") || ff.getName().endsWith(".tsx") ||
                 			ff.getName().endsWith(".CDT") || ff.getName().endsWith(".cdt")	) {
                 		
                 		if (ff.getName().charAt(0) != '.')

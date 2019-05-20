@@ -106,7 +106,7 @@ public class RenderRunnable implements Runnable {
 				}
 				ibr = null;
 				System.gc();
-			} else if (tapfile.toLowerCase().contains(".tzx") || tapfile.toLowerCase().contains(".tap")) {
+			} else if (tapfile.toLowerCase().contains(".tzx") || tapfile.toLowerCase().contains(".tsx")||tapfile.toLowerCase().contains(".tap")) {
 				IntermediateBlockRepresentation ibr = new IntermediateBlockRepresentation(basePath, baseName);
 				if (ibr.getRenderedSampleRate() != sr) {
 					f.delete();

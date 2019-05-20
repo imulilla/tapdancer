@@ -12,7 +12,7 @@ public class TZXTape extends GenericTape {
 	
 	public static final double ZXTick = 1.0/3500000.0;
 	public int minorVersion = 1;
-	public int majorVersion = 20;
+	public int majorVersion = 21;
 	private TZXChunk lastChunk;
 	public static final double PULSE_AMPLITUDE = -0.99;
 	public static final double PULSE_MIDDLE = 0.99;
@@ -241,6 +241,16 @@ public class TZXTape extends GenericTape {
 						this.dataPos += 0x10;
 						size = getDataDWORD(data);
 						break;
+		case 0x4b:		chunk.description = "Kansas city standard block";
+						size = getDataDWORD(data)/*UA_L32   blockLen;          //Block length without these four bytes*/
+						chunk.pauseAfter = getDataWord(data);/*UA_L16   pausems; //Pause after this block in milliseconds*/
+						chunk.pilotPulseLength = getDataWord(data);/*UA_L16   pilot;       //Duration of a PILOT pulse in T-states {same as ONE pulse}*/
+						chunk.pilotPulseCount = getDataWord(data);/*UA_L16   pulses;            //Number of pulses in the PILOT tone*/
+						chunk.zeroBitPulseLength = getDataWord(data);/*UA_L16   bit0len;           //Duration of a ZERO pulse in T-states {=2*pilot}*/
+						chunk.oneBitPulseLength = getDataWord(data);/*UA_L16   bit1len;           //Duration of a ONE pulse in T-states {=pilot}*/
+						/*uint8_t  bitcfg = MSX_BITCFG; 0x24*/
+						/*uint8_t  bytecfg = MSX_BYTECFG; 0x54*/
+						break;
 		case 0x5d:		chunk.description = "Glue block??!!";
 						size = 9;
 						break;
@@ -407,8 +417,7 @@ public class TZXTape extends GenericTape {
 		}
 	}
 	
-	private void writePulse(IntermediateBlockRepresentation w,
-			int len) {
+	private void writePulse(IntermediateBlockRepresentation w, int len) {
 		double duration = ((double)len * 1000000.0) / 3500000.0;	
 		//float duration = ((float)len * 1000000f) / 3500000f;
 		w.addPulse(duration, PULSE_AMPLITUDE);
@@ -563,4 +572,60 @@ public class TZXTape extends GenericTape {
 		// pause
 		w.addPause( 1000*chunk.pauseAfter, PULSE_AMPLITUDE);
 	}
+	public void handleChunk0x4b( IntermediateBlockRepresentation w, TZXChunk chunk ) {
+
+		pulsePilot4B = ULTRA_SPEED ? TSTATES_MSX_PULSE : b->pilot;
+		pulseOne4B   = ULTRA_SPEED ? TSTATES_MSX_PULSE : b->bit1len;
+		pulseZero4B  = ULTRA_SPEED ? TSTATES_MSX_PULSE*2 : b->bit0len;
+		numZeroPulses4B = (b->bitcfg & 0b11110000) >> 4;
+		numOnePulses4B = (b->bitcfg & 0b00001111);
+		if (numZeroPulses4B==0) numZeroPulses4B=16;
+		if (numOnePulses4B==0) numOnePulses4B=16;
+		byteStartBits4B  = (b->bytecfg & 0b11000000) >> 6;
+		byteStartValue4B = (b->bytecfg & 0b00100000) >> 5;
+		byteStopBits4B   = (b->bytecfg & 0b00011000) >> 3;
+		byteStopValue4B  = (b->bytecfg & 0b00000100) >> 2;
+		msb4B = (b->bytecfg & 0b00000001);
+
+		writeHeader4B(ULTRA_SPEED ? 5000 : b->pulses);
+
+		uint32_t size = b->blockLen - 12;
+		byte *data = b->data;
+		while (size--) {
+			writeByte4B(*data++);
+			// write a MSX #4B byte
+			void TsxImage::writeByte4B(byte b)
+			{
+				uint8_t t;
+				// start bits
+				for (t=0; t<byteStartBits4B; t++) {
+					if (byteStartValue4B) write1(); else write0();
+				}
+				// eight data bits
+				for (auto i : xrange(8)) {
+					if (msb4B) {
+						if (b & (1 << (7-i))) {
+							write1();
+						} else {
+							write0();
+						}
+					} else {
+						if (b & (1 << i)) {
+							write1();
+						} else {
+							write0();
+						}
+					}
+				}
+				// stop bits
+				for (t=0; t<byteStopBits4B; t++) {
+					if (byteStopValue4B) write1(); else write0();
+				}
+			}
+		}
+		/*writeSilence(ULTRA_SPEED ? 100 : b->pausems)*/
+		w.addPause( 1000*chunk.pauseAfter, PULSE_AMPLITUDE);
+		return b->blockLen + 5
+	}
 }
+
