@@ -51,7 +51,7 @@ public class PlayActivity extends Activity {
 		
 		// do the check in here
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		final boolean dontShowMessage = (boolean) prefs.getBoolean("dontShowAirplane", false);
+		final boolean dontShowMessage = prefs.getBoolean("dontShowAirplane", false);
 		final Editor edit = prefs.edit();
 		
 		if (dontShowMessage) {
@@ -64,9 +64,9 @@ public class PlayActivity extends Activity {
 		dialog.setContentView(R.layout.airplanmode);
 		dialog.setTitle("Reducing Noise");
 		
-		final CheckBox cb = (CheckBox)dialog.findViewById(R.id.dontShowWarningAgain);
+		final CheckBox cb = dialog.findViewById(R.id.dontShowWarningAgain);
 
-		Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOk);
+		Button dialogButton = dialog.findViewById(R.id.dialogButtonOk);
 		// if button is clicked, close the custom dialog
 		dialogButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -90,7 +90,7 @@ public class PlayActivity extends Activity {
 	private void initFromPreferences() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		AudioManager manager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
-		int volume_level = (int) prefs.getInt("tap.volume", -1);
+		int volume_level = prefs.getInt("tap.volume", -1);
 		if (volume_level != -1) {
 			// restore volume level
 			manager.setStreamVolume(AudioManager.STREAM_MUSIC, volume_level, 0);
@@ -142,7 +142,7 @@ public class PlayActivity extends Activity {
 				//PlayActivity.this.clickPauseFile(surface);
 				surface.setScrolly((String)message.obj);
 			}
-		};
+		}
 	};
 	
 	private PlayerSurface surface;
@@ -151,12 +151,8 @@ public class PlayActivity extends Activity {
 	private Messenger messenger;
 	
 	public void refreshState() {
-		
-		if (currentfile.equals("")) {
-			surface.inserted = false;
-		} else {
-			surface.inserted = true;
-		}
+
+		surface.inserted = !currentfile.equals("");
         
 	}
 	
@@ -213,7 +209,7 @@ public class PlayActivity extends Activity {
 		
 		Runtime rt = Runtime.getRuntime();
 		long maxMemory = rt.maxMemory();
-		Log.v("onCreate", "maxMemory:" + Long.toString(maxMemory));
+		Log.v("onCreate", "maxMemory:" + maxMemory);
 	}
 	
 	private void updateCountPos() {

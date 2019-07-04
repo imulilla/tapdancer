@@ -244,9 +244,9 @@ class PlayerSurface extends SurfaceView implements Runnable{
    }
    
    float x_mod = 480f / s_w;
-   float y_mod = 320f / s_h;;
-   
-   // convert points 
+   float y_mod = 320f / s_h;
+
+      // convert points
    float glx = (x_mod * touched_x) - 240f;
    float gly = ((s_h - touched_y) * y_mod) - 160f;
    
@@ -256,12 +256,8 @@ class PlayerSurface extends SurfaceView implements Runnable{
    String button = this.getButtonPress(vec);
    
    int action = event.getAction();
-   
-   if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-	   touched = true;
-   } else {
-	   touched = false;
-   }
+
+      touched = action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE;
  
    
    if (!button.equals("") && action == MotionEvent.ACTION_DOWN) {

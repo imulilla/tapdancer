@@ -115,7 +115,7 @@ public class RenderRunnable implements Runnable {
 				System.gc();
 			}
 		}
-		
+		f.delete();//borrrraaa
 		if (!f.exists()) {
 		
 			Log.i(getClass().getName(), "Rendering audio to "+outputpath);

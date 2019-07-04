@@ -323,9 +323,9 @@ public class PRGFormat {
 		int idx = 0;
 		for (byte b: raw) {
 			if (idx < raw.length-1) 
-				writeDataByte((int)(b & 0xff), true);
+				writeDataByte((b & 0xff), true);
 			else
-				writeDataByte((int)(b & 0xff), false);
+				writeDataByte((b & 0xff), false);
 			idx ++;
 		}
 	}
@@ -363,9 +363,9 @@ public class PRGFormat {
 		int i=0;
 		for (byte b: data) {
 			if (i < 8) 
-				writeDataByte((int)(b & 0xff), true);
+				writeDataByte((b & 0xff), true);
 			else
-				writeDataByte((int)(b & 0xff), false);
+				writeDataByte((b & 0xff), false);
 			i++;
 		}
 	}
@@ -379,9 +379,9 @@ public class PRGFormat {
 		int i=0;
 		for (byte b: data) {
 			if (i < 8) 
-				writeDataByte((int)(b & 0xff), true);
+				writeDataByte((b & 0xff), true);
 			else
-				writeDataByte((int)(b & 0xff), false);
+				writeDataByte((b & 0xff), false);
 			i++;
 		}
 	}

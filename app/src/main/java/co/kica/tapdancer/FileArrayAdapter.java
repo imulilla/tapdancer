@@ -43,10 +43,10 @@ public class FileArrayAdapter extends ArrayAdapter<Option>{
                }
                final Option o = items.get(position);
                if (o != null) {
-                       TextView t1 = (TextView) v.findViewById(R.id.TextView01);
+                       TextView t1 = v.findViewById(R.id.TextView01);
                        t1.setTextColor(Color.WHITE);
                        t1.setTypeface(typeface);
-                       TextView t2 = (TextView) v.findViewById(R.id.TextView02);
+                       TextView t2 = v.findViewById(R.id.TextView02);
                        t2.setTextColor(Color.LTGRAY);
                        t2.setTypeface(typeface);
                        

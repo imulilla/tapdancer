@@ -468,9 +468,9 @@ public class IntermediateBlockRepresentation {
 		totalBytes += neededSamples;
 		
 		// add entry to manifest
-		this.manifest.setValue("Data."+Integer.toString(this.blockIndex)+".Type", "SILENCE");
-		this.manifest.setValue("Data."+Integer.toString(this.blockIndex)+".Duration", Long.toString(neededSamples) );
-		this.manifest.setValue("Data."+Integer.toString(this.blockIndex)+".Start", Integer.toString(this.startOfBlock));
+		this.manifest.setValue("Data."+ this.blockIndex +".Type", "SILENCE");
+		this.manifest.setValue("Data."+ this.blockIndex +".Duration", Long.toString(neededSamples) );
+		this.manifest.setValue("Data."+ this.blockIndex +".Start", Integer.toString(this.startOfBlock));
 		
 		startOfBlock = totalBytes;
 		
@@ -494,10 +494,10 @@ public class IntermediateBlockRepresentation {
 			}
 			
 			// add entry to manifest
-			this.manifest.setValue("Data."+Integer.toString(this.blockIndex)+".Source", getCurrentFile());
-			this.manifest.setValue("Data."+Integer.toString(this.blockIndex)+".Type", "DATA");
-			this.manifest.setValue("Data."+Integer.toString(this.blockIndex)+".Duration", Integer.toString(bytesWritten) );
-			this.manifest.setValue("Data."+Integer.toString(this.blockIndex)+".Start", Integer.toString(this.startOfBlock));
+			this.manifest.setValue("Data."+ this.blockIndex +".Source", getCurrentFile());
+			this.manifest.setValue("Data."+ this.blockIndex +".Type", "DATA");
+			this.manifest.setValue("Data."+ this.blockIndex +".Duration", Integer.toString(bytesWritten) );
+			this.manifest.setValue("Data."+ this.blockIndex +".Start", Integer.toString(this.startOfBlock));
 			
 			// now reset for next block
 			blockIndex++;
@@ -523,7 +523,7 @@ public class IntermediateBlockRepresentation {
 	}
 	
 	public String getCurrentFile() {
-		return this.baseName + "_"+Integer.toString(this.blockIndex)+"."+this.baseExt;
+		return this.baseName + "_"+ this.blockIndex +"."+this.baseExt;
 	}
 	
 	public String getManifestName() {
@@ -661,28 +661,28 @@ public class IntermediateBlockRepresentation {
 	
 	public int blockDuration( int index ) {
 		if (validBlock(index)) {
-			return Integer.parseInt(this.manifest.getValue("Data."+Integer.toString(index)+".Duration"));
+			return Integer.parseInt(this.manifest.getValue("Data."+ index +".Duration"));
 		}
 		return 0;
 	}
 
 	public int blockStart( int index ) {
 		if (validBlock(index)) {
-			return Integer.parseInt(this.manifest.getValue("Data."+Integer.toString(index)+".Start"));
+			return Integer.parseInt(this.manifest.getValue("Data."+ index +".Start"));
 		}
 		return 0;
 	}
 	
 	public String blockSource( int index ) {
 		if (validBlock(index)) {
-			return this.getBasePath()+"/"+this.manifest.getValue("Data."+Integer.toString(index)+".Source");
+			return this.getBasePath()+"/"+this.manifest.getValue("Data."+ index +".Source");
 		}
 		return "";
 	}
 	
 	public String blockType( int index ) {
 		if (validBlock(index)) {
-			return this.manifest.getValue("Data."+Integer.toString(index)+".Type");
+			return this.manifest.getValue("Data."+ index +".Type");
 		}
 		return "INVALID";
 	}
