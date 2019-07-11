@@ -463,14 +463,13 @@ public class TZXTape extends GenericTape {
 
 	public void writePilotTone(IntermediateBlockRepresentation w, int pulseLength, int numPulses) {
 		double duration = ((double) pulseLength * 1000000.0) / 3500000.0;
-		for (int i = 0; i < numPulses; i++) {
+        for (int i = 0; i < numPulses; i++) {
 			w.addPulse(duration, PULSE_AMPLITUDE);
 		}
 	}
 
 	private void writePulse(IntermediateBlockRepresentation w, int len) {
 		double duration = ((double) len * 1000000.0) / 3500000.0;
-		//float duration = ((float)len * 1000000f) / 3500000f;
 		w.addPulse(duration, PULSE_AMPLITUDE);
 	}
 
@@ -532,8 +531,6 @@ public class TZXTape extends GenericTape {
 					//System.out.print("1");
 					writePulse(w, chunk.oneBitPulseLength);
 					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
 				} else {
 					// zero
 					//System.out.print("0");
@@ -547,10 +544,9 @@ public class TZXTape extends GenericTape {
 
 		}
 
-	private void writeDataByte(IntermediateBlockRepresentation w, TZXChunk chunk, int indice) {
+	private void writeDataByteLSB(IntermediateBlockRepresentation w, TZXChunk chunk, int indice,int bitscero,int bitsuno) {
 
 
-//escribe el byte al reves
 			int bc = 8;
 			int fb = 0;
 			int b = chunk.chunkData[indice];
@@ -560,18 +556,18 @@ public class TZXTape extends GenericTape {
 				if ((bit & 0x1) == 0x1) {
 					// one
 					//System.out.print("1");
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
+					for (int pulsos = 0; pulsos <bitsuno ; pulsos++) {
+						writePulse(w, chunk.oneBitPulseLength);
+					}
 
 
 
 				} else {
 					// zero
 					//System.out.print("0");
-					writePulse(w, chunk.zeroBitPulseLength);
-					writePulse(w, chunk.zeroBitPulseLength);
+					for (int pulsos = 0; pulsos <bitscero ; pulsos++) {
+						writePulse(w, chunk.zeroBitPulseLength);
+					}
 
 				}
 				b = (b >> 1) & 0xff;
@@ -581,7 +577,39 @@ public class TZXTape extends GenericTape {
 
 		//System.out.println();
 	}
+	private void writeDataByteMSB(IntermediateBlockRepresentation w, TZXChunk chunk, int indice,int bitscero,int bitsuno) {
 
+
+		int bc = 8;
+		int fb = 0;
+		int b = chunk.chunkData[indice];
+
+		while (bc >0) {
+			int bit = (b & 0x80);
+			if ((bit & 0x80) == 0x80) {
+				// one
+				//System.out.print("1");
+				for (int pulsos = 0; pulsos <bitsuno ; pulsos++) {
+					writePulse(w, chunk.oneBitPulseLength);
+				}
+
+
+
+			} else {
+				// zero
+				//System.out.print("0");
+				for (int pulsos = 0; pulsos <bitscero ; pulsos++) {
+					writePulse(w, chunk.zeroBitPulseLength);
+				}
+
+			}
+			b = b << 1;
+			bc--;
+		}
+
+
+		//System.out.println();
+	}
 	/*
 	Block 0x10: 2209 times.
 	Block 0x11: 2851 times.
@@ -662,44 +690,47 @@ public class TZXTape extends GenericTape {
 
 	public void handleChunk0x4b(IntermediateBlockRepresentation w, TZXChunk chunk) {
 		writePilotTone(w, chunk.pilotPulseLength, chunk.pilotPulseCount);
-		switch (chunk.bytecfg & 0b00011000){
-
-            case 0b00010000:
-		        for (int indice = 0; indice < chunk.chunkData.length; indice++) {
-                    writePulse(w, chunk.zeroBitPulseLength);
-                    writePulse(w, chunk.zeroBitPulseLength);
-                    writeDataByte(w, chunk, indice);
-                    writePulse(w, chunk.oneBitPulseLength);
-                    writePulse(w, chunk.oneBitPulseLength);
-                    writePulse(w, chunk.oneBitPulseLength);
-                    writePulse(w, chunk.oneBitPulseLength);
-                    writePulse(w, chunk.oneBitPulseLength);
-                    writePulse(w, chunk.oneBitPulseLength);
-                    writePulse(w, chunk.oneBitPulseLength);
-                    writePulse(w, chunk.oneBitPulseLength);
-		        }
-            break;
-
-            case 0b00011000:
-                for (int indice = 0; indice < chunk.chunkData.length; indice++) {
-					writePulse(w, chunk.zeroBitPulseLength);
-					writePulse(w, chunk.zeroBitPulseLength);
-					writeDataByte(w, chunk, indice);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
-					writePulse(w, chunk.oneBitPulseLength);
+		int bitscero=(chunk.bitcfg & 0b11110000)>>4; //"bitscero" = numero de pulsos para valor '0'
+		int bitsuno=(chunk.bitcfg & 0b00001111); //"bitsuno" = numero de pulsos para valor '1'
+		int bitsarranque=(chunk.bytecfg & 0b11000000)>>6;//"bitsarranque" = numero de bits en arranque
+		int valarranque=(chunk.bytecfg & 0b00100000)>>5;//"valarranque" = valor de bits de arranque
+		int bitsparada=(chunk.bytecfg & 0b00011000)>>3;//"bitsparada" = numero de bits en parada
+		int valparada=(chunk.bytecfg & 0b00000100)>>2;//"valparada" = valor de bits en parada
+		int byteorden=(chunk.bytecfg & 0b00000001);//"byteorden" = orden de los bits (0=lsb,1=msb)
+		int bitpulselenght[][] = {{chunk.zeroBitPulseLength,1*bitscero},{chunk.oneBitPulseLength,1*bitsuno}};
+		if (byteorden == 0) {
+			for (int indice = 0; indice < chunk.chunkData.length; indice++) {
+				for (int arranque = 0; arranque < bitsarranque; arranque++) {
+					for (int pulsos = 0; pulsos < bitpulselenght[valarranque][1]; pulsos++) {
+						writePulse(w, bitpulselenght[valarranque][0]);
+					}
 				}
-                    break;
-		}
+				writeDataByteLSB(w, chunk, indice,bitscero,bitsuno);
 
-	}
+				for (int parada = 0; parada < bitsparada; parada++) {
+					for (int pulsos = 0; pulsos < bitpulselenght[valparada][1]; pulsos++) {
+						writePulse(w, bitpulselenght[valparada][0]);
+					}
+				}
+			}
+		}
+		else
+		{
+			for (int indice = 0; indice < chunk.chunkData.length; indice++) {
+				for (int arranque = 0; arranque < bitsarranque; arranque++) {
+					for (int pulsos = 0; pulsos < bitpulselenght[valarranque][1]; pulsos++) {
+						writePulse(w, bitpulselenght[valarranque][0]);
+					}
+				}
+				writeDataByteMSB(w, chunk, indice,bitscero,bitsuno);
+
+				for (int parada = 0; parada < bitsparada; parada++) {
+					for (int pulsos = 0; pulsos < bitpulselenght[valparada][1]; pulsos++) {
+						writePulse(w, bitpulselenght[valparada][0]);
+					}
+				}
+			}
+		}
+		w.addPause( 1000*chunk.pauseAfter, PULSE_AMPLITUDE);
+		}
 }
