@@ -201,11 +201,7 @@ public class SmartFile extends File {
 
     private boolean subpathExistsZIP(String var1, String var2) {
         boolean var3;
-        if(this.shadowZIP.getEntry(var2) != null) {
-            var3 = true;
-        } else {
-            var3 = false;
-        }
+        var3 = this.shadowZIP.getEntry(var2) != null;
 
         return var3;
     }
@@ -424,11 +420,7 @@ public class SmartFile extends File {
 
     public boolean isFile() {
         boolean var1;
-        if(this.exists() && !this.isDirectory()) {
-            var1 = true;
-        } else {
-            var1 = false;
-        }
+        var1 = this.exists() && !this.isDirectory();
 
         return var1;
     }
@@ -495,18 +487,14 @@ public class SmartFile extends File {
                         if(!var8.hasMoreElements()) {
                             var3 = var4;
                             if(var1 < var4.length) {
-                                var3 = (SmartFile[])Arrays.copyOfRange(var4, 0, var1);
+                                var3 = Arrays.copyOfRange(var4, 0, var1);
                             }
 
                             return var3;
                         }
 
                         var6 = (ZipEntry)var8.nextElement();
-                        if(!var6.isDirectory() && var6.getSize() != 0L) {
-                            var2 = false;
-                        } else {
-                            var2 = true;
-                        }
+                        var2 = var6.isDirectory() || var6.getSize() == 0L;
                     } while(!var6.getName().startsWith(this.subpath + File.separator) && (this.subpath.length() != 0 || var6.getName().contains(File.separator) && (!var2 || var6.getName().indexOf(File.separator) != var6.getName().length() - 1)));
 
                     if(!var6.getName().equals(this.subpath + File.separator) && !var6.getName().startsWith("_") && !var6.getName().endsWith(".DS_Store")) {
@@ -526,9 +514,9 @@ public class SmartFile extends File {
         this.type = var1;
     }
 
-    public static enum SmartType {
+    public enum SmartType {
         PHYSICAL,
         T64FILE,
-        ZIPFILE;
+        ZIPFILE
     }
 }
