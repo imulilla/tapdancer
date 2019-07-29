@@ -23,7 +23,7 @@ public class AtariTape extends GenericTape {
 		
 		public String toString() {
 			String idstr = new String(id);
-			return idstr+" (length "+Integer.toString(length)+" byte(s), aux = "+Integer.toString(aux)+")";
+			return idstr+" (length "+ length +" byte(s), aux = "+ aux +")";
 		}
 		
 		public String recordType() {
@@ -315,7 +315,7 @@ public class AtariTape extends GenericTape {
 		}
 		else if (chunk.recordType().equals("baud")) {
 			this.baudRate = chunk.aux;
-			System.out.println("Setting default baudrate to "+Integer.toString(chunk.aux));
+			System.out.println("Setting default baudrate to "+ chunk.aux);
 		}
 		else if (chunk.recordType().equals("data")) {
 			handleDATAChunk(chunk, w);

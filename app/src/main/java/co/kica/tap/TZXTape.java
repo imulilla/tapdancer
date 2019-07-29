@@ -1,12 +1,25 @@
+
 package co.kica.tap;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import android.app.AlertDialog;
+import android.app.Activity;
+import android.content.Context;
+import android.media.AsyncPlayer;
 
 import co.kica.tap.TZXTape.TZXChunk;
+import co.kica.tapdancer.MainActivity;
+import co.kica.tapdancer.PlayActivity;
+import co.kica.tapdancer.PlaybackRunnable;
+import co.kica.tapdancer.RenderActivity;
+import co.kica.tapdancer.RenderRunnable;
 
 public class TZXTape extends GenericTape {
 
@@ -19,6 +32,7 @@ public class TZXTape extends GenericTape {
 	public static final double PULSE_REST = 0.99;
 	public static final double PAL_CLK = 3500000;
 	public static final double MU = 1000000;
+	public static double freq = 1000000.0;
 
 	public int[] blockCounts = new int[256];
 	private int coreCounter;
@@ -47,14 +61,21 @@ public class TZXTape extends GenericTape {
 		public String description;
 		public int bitcfg;
 		public int bytecfg;
+		public String title;
+		public String customid;
+		public int lbloque;
+		public String bloque;
 	}
+
 
 	public TZXTape(int sampleRate) {
 		super();
 		this.setTargetSampleRate(sampleRate);
 	}
+	public Byte [] arrayips = new Byte [0xffff];
+	public boolean ips;
 
-	@Override
+    @Override
 	public boolean parseHeader(InputStream f) {
 		byte[] buff = new byte[headerSize()];
 
@@ -211,7 +232,11 @@ public class TZXTape extends GenericTape {
 				break;
 			case 0x21:
 				chunk.description = "Group start";
-				size = getDataByte(data);
+				chunk.lbloque = getDataByte(data);
+                chunk.bloque = "";
+                for (int idind = 0; idind < chunk.lbloque; idind++) {
+                    chunk.bloque = chunk.bloque + (char) getDataByte(data);
+                }
 				break;
 			case 0x22:
 				chunk.description = "Group end";
@@ -265,12 +290,11 @@ public class TZXTape extends GenericTape {
 				break;
 			case 0x35:
 				chunk.description = "Custom info block";
-				this.dataPos += 0x10;
-				//for (int idind = 0; idind < 10; idind++) {
-					//customid[idind] = getDataByte(data);
-				//}
+				chunk.customid = "";
+				for (int idind = 0; idind < 0x10; idind++) {
+					chunk.customid = chunk.customid + (char)getDataByte(data);
+				}
 				size = getDataDWORD(data);
-
 				break;
 			case 0x4b:
 				chunk.description = "Kansas city standard block";
@@ -422,6 +446,15 @@ public class TZXTape extends GenericTape {
 			case 0x20:
 				handleChunk0x20(w, chunk);
 				break;
+            case 0x21:
+                handleChunk0x21(w, chunk);
+                break;
+			case 0x32:
+				handleChunk0x32(w, chunk);
+				break;
+			case 0x35:
+				handleChunk0x35(w, chunk);
+				break;
 			case 0x4b:
 				handleChunk0x4b(w, chunk);
 				break;
@@ -462,14 +495,14 @@ public class TZXTape extends GenericTape {
 	}
 
 	public void writePilotTone(IntermediateBlockRepresentation w, int pulseLength, int numPulses) {
-		double duration = ((double) pulseLength * 1000000.0) / 3500000.0;
+		double duration = ((double) pulseLength * freq) / 3500000.0;
         for (int i = 0; i < numPulses; i++) {
 			w.addPulse(duration, PULSE_AMPLITUDE);
 		}
 	}
 
 	private void writePulse(IntermediateBlockRepresentation w, int len) {
-		double duration = ((double) len * 1000000.0) / 3500000.0;
+		double duration = ((double) len * freq) / 3500000.0;
 		w.addPulse(duration, PULSE_AMPLITUDE);
 	}
 
@@ -624,6 +657,10 @@ public class TZXTape extends GenericTape {
 		w.addPause(1000 * chunk.pauseAfter, PULSE_AMPLITUDE);
 	}
 
+    public void handleChunk0x21(IntermediateBlockRepresentation w, TZXChunk chunk) {
+        w.addPause(1000 * chunk.pauseAfter, PULSE_AMPLITUDE);
+    }
+
 	public void handleChunk0x15(IntermediateBlockRepresentation w, TZXChunk chunk) {
 		writeDirectRecordingBlock(w, chunk);
 		w.addPause(1000 * chunk.pauseAfter, PULSE_AMPLITUDE);
@@ -631,7 +668,30 @@ public class TZXTape extends GenericTape {
 
 	/* standard data */
 	public void handleChunk0x10(IntermediateBlockRepresentation w, TZXChunk chunk) {
+		if (ips) {//[IPS Patch] Aplica el parche que esta en la matriz al buffer, si esta llena
+			int c = 6;
+			int cont = 1;
+			int origen = 0;
+			while (cont < arrayips[0]-8)
+			{
+				int destino = ((arrayips[c] &0xf)<<16)| ((arrayips[c + 1]&0xFF)<<8)|(arrayips[c + 2]&0xff);
+				cont +=3;
+				int tope = ((arrayips[(c)+3]&0xFF)<<8)|(arrayips[(c+4)]&0xff);
+				cont +=2;
+				for (int indice = 0; indice<tope; indice++)
+				{
+					origen = 5 + c;
+					chunk.chunkData[destino+indice+1] = arrayips[origen];
+					c +=1;
+					cont += 1;
+				}
+				c = origen + 1;
+			}
+			ips=false;
+			byte test;
+		}
 		// write pilot
+		freq = 1000000.0;
 		int flag = chunk.chunkData[0] & 0xff;
 		//System.out.println("Flag: "+Integer.toHexString(flag));
 
@@ -688,8 +748,88 @@ public class TZXTape extends GenericTape {
 		w.addPause(1000 * chunk.pauseAfter, PULSE_AMPLITUDE);
 	}
 
+	/*archive info */
+	public void handleChunk0x32(IntermediateBlockRepresentation w, TZXChunk chunk) {
+		int contador=0;
+		for (int lstrings = 0; lstrings < chunk.chunkData[0]; lstrings++) {
+			String text ="";
+			for (int ltextstrings = 0; ltextstrings < chunk.chunkData[lstrings+2+contador]; ltextstrings++) {
+			text = text + (char)chunk.chunkData[lstrings+3+ltextstrings+contador];
+			}
+
+				switch (chunk.chunkData [lstrings+1+contador]){
+				case 0x0:
+					w.setname(text);
+
+
+				}
+			contador = contador + chunk.chunkData[lstrings+2+contador]+1;
+		}
+	}
+	/*custom info block */
+	public void handleChunk0x35(IntermediateBlockRepresentation w, TZXChunk chunk) {
+		if (chunk.customid.startsWith("patch")) {
+		    String nombreparche="";
+            for(int a = 5; a <0x10;a++) {
+				nombreparche = nombreparche + chunk.customid.charAt(a);
+
+			}
+            arrayips[0]=(byte)chunk.chunkData.length;
+            for (int indice = 0; indice < chunk.chunkData.length; indice++) {
+                arrayips[indice+1]=chunk.chunkData[indice];
+
+            }
+			ips = true;
+		    }
+        else
+        {
+            switch (chunk.customid) {
+                case "TSX.LOAD        ":
+                    String tsxload = "";
+                    for (int indice = 0; indice < chunk.chunkData.length; indice++) {
+                        tsxload = tsxload + (char) chunk.chunkData[indice];
+
+                    }
+                    w.setload(tsxload);
+                    break;
+				case "imageCARATULA   ":
+					//for (int indice = 0; indice < chunk.chunkData.length; indice++) {
+					//	tsxload = tsxload + (char) chunk.chunkData[indice];
+					//
+					//}
+					w.setcover(w.getBaseName()+"_CARATULA.png");
+					break;
+            }
+        }
+	}
+	/* MSX block*/
 	public void handleChunk0x4b(IntermediateBlockRepresentation w, TZXChunk chunk) {
+		freq = 960000;
 		writePilotTone(w, chunk.pilotPulseLength, chunk.pilotPulseCount);
+		if(ips){//[IPS Patch] Aplica el parche que esta en la matriz al buffer, si esta llena
+			int c = 6;
+			int cont =
+					1;
+			int origen = 0;
+			while (cont < arrayips[0]-8)
+			{
+				int destino = ((arrayips[c] &0xf)<<16)| ((arrayips[c + 1]&0xFF)<<8)|(arrayips[c + 2]&0xff);
+				cont +=3;
+				int tope = ((arrayips[(c)+3]&0xFF)<<8)|(arrayips[(c+4)]&0xff);
+				cont +=2;
+				for (int indice = 0; indice<tope; indice++)
+				{
+					origen = 5 + c;
+					chunk.chunkData[destino+indice] = arrayips[origen];
+					c +=1;
+					cont += 1;
+				}
+				c = origen + 1;
+			}
+			ips=false;
+			byte test;
+		}
+
 		int bitscero=(chunk.bitcfg & 0b11110000)>>4; //"bitscero" = numero de pulsos para valor '0'
 		int bitsuno=(chunk.bitcfg & 0b00001111); //"bitsuno" = numero de pulsos para valor '1'
 		int bitsarranque=(chunk.bytecfg & 0b11000000)>>6;//"bitsarranque" = numero de bits en arranque
