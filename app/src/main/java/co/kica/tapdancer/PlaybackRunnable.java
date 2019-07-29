@@ -156,7 +156,8 @@ public class PlaybackRunnable implements Runnable {
 				);
 				
 				this.sendScrollMessage("                   Playing...");
-				
+
+
 				audio.write(cue.getCurrentBuffer(this.invertWaveform), 0, chunk);
 				//buffer = null;
 				System.gc();
@@ -208,7 +209,6 @@ public class PlaybackRunnable implements Runnable {
 			}
 			
 			this.sendScrollMessage("                   Stopped...");
-			
 			//dis.close();
 			if (audio != null) {
 				audio.stop();

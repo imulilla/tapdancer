@@ -3,8 +3,10 @@ package co.kica.tapdancer;
 import java.io.File;
 
 import co.kica.tap.IntermediateBlockRepresentation;
+import co.kica.tap.TZXTape;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -35,7 +37,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class PlayActivity extends Activity {
-	
 	private static final int RESULT_SETTINGS = 0;
 	private AudioTrack audio; 
 	private String currentfile = "";
@@ -51,7 +52,7 @@ public class PlayActivity extends Activity {
 		
 		// do the check in here
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		final boolean dontShowMessage = (boolean) prefs.getBoolean("dontShowAirplane", false);
+		final boolean dontShowMessage = prefs.getBoolean("dontShowAirplane", false);
 		final Editor edit = prefs.edit();
 		
 		if (dontShowMessage) {
@@ -64,9 +65,9 @@ public class PlayActivity extends Activity {
 		dialog.setContentView(R.layout.airplanmode);
 		dialog.setTitle("Reducing Noise");
 		
-		final CheckBox cb = (CheckBox)dialog.findViewById(R.id.dontShowWarningAgain);
+		final CheckBox cb = dialog.findViewById(R.id.dontShowWarningAgain);
 
-		Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOk);
+		Button dialogButton = dialog.findViewById(R.id.dialogButtonOk);
 		// if button is clicked, close the custom dialog
 		dialogButton.setOnClickListener(new OnClickListener() {
 			@Override
@@ -90,7 +91,7 @@ public class PlayActivity extends Activity {
 	private void initFromPreferences() {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		AudioManager manager = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
-		int volume_level = (int) prefs.getInt("tap.volume", -1);
+		int volume_level = prefs.getInt("tap.volume", -1);
 		if (volume_level != -1) {
 			// restore volume level
 			manager.setStreamVolume(AudioManager.STREAM_MUSIC, volume_level, 0);
@@ -142,7 +143,7 @@ public class PlayActivity extends Activity {
 				//PlayActivity.this.clickPauseFile(surface);
 				surface.setScrolly((String)message.obj);
 			}
-		};
+		}
 	};
 	
 	private PlayerSurface surface;
@@ -151,12 +152,8 @@ public class PlayActivity extends Activity {
 	private Messenger messenger;
 	
 	public void refreshState() {
-		
-		if (currentfile.equals("")) {
-			surface.inserted = false;
-		} else {
-			surface.inserted = true;
-		}
+
+		surface.inserted = !currentfile.equals("");
         
 	}
 	
@@ -167,8 +164,7 @@ public class PlayActivity extends Activity {
 			currentfile = "";
 			surface.setScrolly("               No tape loaded. Press EJECT to load a tape... ");
 		} else {
-			// we have a file... 
-			
+			// we have a file..
 			String[] parts = currentfile.split("[:]");
 			this.currentPath = parts[0];
 			this.currentName = parts[1];
@@ -176,7 +172,6 @@ public class PlayActivity extends Activity {
 			//File z = new File(currentfile);
 			//this.counterLength = (int)((z.length() - 44) / 44100);
 			this.updateCountPos();
-			
 			surface.setScrolly("               Ready.  PRESS PLAY ON TAPE ...");
 		}
 		refreshState();
@@ -206,6 +201,7 @@ public class PlayActivity extends Activity {
 			this.currentName = parts[1];
 			this.updateCountPos();
 			surface.setScrolly("               Ready.  PRESS PLAY ON TAPE ...");
+
 		}
 		refreshState();
 		
@@ -213,7 +209,7 @@ public class PlayActivity extends Activity {
 		
 		Runtime rt = Runtime.getRuntime();
 		long maxMemory = rt.maxMemory();
-		Log.v("onCreate", "maxMemory:" + Long.toString(maxMemory));
+		Log.v("onCreate", "maxMemory:" + maxMemory);
 	}
 	
 	private void updateCountPos() {
@@ -361,7 +357,7 @@ public class PlayActivity extends Activity {
 
 	public void clickLaunchWeb(PlayerSurface playerSurface) {
 		Intent webIntent = new Intent( Intent.ACTION_VIEW );
-        webIntent.setData( Uri.parse("http://tapdancer.info") );
+        webIntent.setData( Uri.parse("https://github.com/imulilla/tapdancer/tree/tsx") );
         this.startActivity( webIntent );
 	}
 	

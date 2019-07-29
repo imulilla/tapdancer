@@ -86,8 +86,8 @@ public class RenderActivity extends Activity {
 				
 				
 			}
-		};
-	};
+		}
+    };
 	private Thread task;
 	private RenderRunnable renderer;
 	
@@ -111,12 +111,12 @@ public class RenderActivity extends Activity {
 		
 		typeface = Typeface.createFromAsset(this.getAssets(), "fonts/atarcc.ttf");
                 
-        TextView fn = (TextView) findViewById(R.id.filename);
+        TextView fn = findViewById(id.filename);
         fn.setText(filename.replaceFirst(".+[/]", ""));
         fn.setTypeface(typeface);
         
         // get progress bar reference
-        this.pb = (ProgressBar) this.findViewById(R.id.progressBar1);
+        this.pb = this.findViewById(id.progressBar1);
         
         // do the render
         this.messenger = new Messenger(handler);

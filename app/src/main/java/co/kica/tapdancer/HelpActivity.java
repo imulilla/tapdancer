@@ -22,7 +22,7 @@ public class HelpActivity extends Activity {
        
         this.setContentView(R.layout.activity_help);
         
-        wv = (WebView)this.findViewById(R.id.webView1);
+        wv = this.findViewById(id.webView1);
         wv.loadUrl("file:///android_asset/html/index.html");
         
         wv.clearHistory();
