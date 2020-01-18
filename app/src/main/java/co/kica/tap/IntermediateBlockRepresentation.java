@@ -20,6 +20,9 @@ public class IntermediateBlockRepresentation {
 	
 	private String baseName = "cowsarecool";
 	private String basePath = ".";
+	private String name=" ";
+	private String load=" ";
+	private String cover=" ";
 	private String baseExt  = "pcm_u8";
 	private int sampleRate = 44100;
 	private int bitsPerSample = 8;
@@ -221,6 +224,9 @@ public class IntermediateBlockRepresentation {
 		} else {
 			this.manifest.setValue("Info.BaseName", this.baseName);
 			this.manifest.setValue("Info.BasePath", this.basePath);
+			this.manifest.setValue("Info.Name", this.name);
+            this.manifest.setValue("Info.Load", this.load);
+			this.manifest.setValue("Info.Cover", this.cover);
 			this.manifest.setValue("Info.System", this.system );
 			this.manifest.setValue("Info.Extension", this.baseExt);
 			this.manifest.setValue("Info.Blocks.Total", "0");
@@ -573,6 +579,19 @@ public class IntermediateBlockRepresentation {
 		this.manifest.setValue("Info.BaseName", baseName);
 	}
 
+	public void setname (String name) {
+        this.manifest.setValue("Info.Name", name);
+    }
+	public String getname() {
+		return this.manifest.getValue("Info.Name");
+	}
+
+    public void setload (String load) {
+        this.manifest.setValue("Info.Load", load);
+    }
+	public void setcover (String cover) {
+		this.manifest.setValue("Info.Cover", cover);
+	}
 	public String getBasePath() {
 		return this.manifest.getValue("Info.BasePath");
 	}

@@ -3,8 +3,10 @@ package co.kica.tapdancer;
 import java.io.File;
 
 import co.kica.tap.IntermediateBlockRepresentation;
+import co.kica.tap.TZXTape;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -35,7 +37,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class PlayActivity extends Activity {
-	
 	private static final int RESULT_SETTINGS = 0;
 	private AudioTrack audio; 
 	private String currentfile = "";
@@ -163,8 +164,7 @@ public class PlayActivity extends Activity {
 			currentfile = "";
 			surface.setScrolly("               No tape loaded. Press EJECT to load a tape... ");
 		} else {
-			// we have a file... 
-			
+			// we have a file..
 			String[] parts = currentfile.split("[:]");
 			this.currentPath = parts[0];
 			this.currentName = parts[1];
@@ -172,7 +172,6 @@ public class PlayActivity extends Activity {
 			//File z = new File(currentfile);
 			//this.counterLength = (int)((z.length() - 44) / 44100);
 			this.updateCountPos();
-			
 			surface.setScrolly("               Ready.  PRESS PLAY ON TAPE ...");
 		}
 		refreshState();
@@ -202,6 +201,7 @@ public class PlayActivity extends Activity {
 			this.currentName = parts[1];
 			this.updateCountPos();
 			surface.setScrolly("               Ready.  PRESS PLAY ON TAPE ...");
+
 		}
 		refreshState();
 		
@@ -357,7 +357,7 @@ public class PlayActivity extends Activity {
 
 	public void clickLaunchWeb(PlayerSurface playerSurface) {
 		Intent webIntent = new Intent( Intent.ACTION_VIEW );
-        webIntent.setData( Uri.parse("http://tapdancer.info") );
+        webIntent.setData( Uri.parse("https://github.com/imulilla/tapdancer/tree/tsx") );
         this.startActivity( webIntent );
 	}
 	

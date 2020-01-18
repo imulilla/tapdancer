@@ -6,8 +6,12 @@ import java.util.Vector;
 import co.kica.tapdancer.R;
 import co.kica.tapdancer.R.drawable;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -45,10 +49,10 @@ class PlayerSurface extends SurfaceView implements Runnable{
 	private int www_h; 
 	private final int counter_x = 450;
 	private final int counter_y = 245;
-	
 	public boolean inserted = false;
 	private String lastScrolly = "";
- 
+    private int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE;
+
   public PlayerSurface(Context context, PlayActivity act) {
    super(context);
    this.mContext = context;
@@ -56,10 +60,14 @@ class PlayerSurface extends SurfaceView implements Runnable{
    // TODO Auto-generated constructor stub
    surfaceHolder = getHolder();
    random = new Random();
-   
+      if (ActivityCompat.checkSelfPermission(context , Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+          ActivityCompat.requestPermissions(this.mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+      }
    Resources res = this.getResources();
    tapedeck = res.getDrawable(R.drawable.td_player);
    tapedeck_inserted = res.getDrawable(R.drawable.td_player_inserted);
+      // tapedeck_inserted = this inf;
+
    background = res.getDrawable(R.drawable.tapdancer_background);
    www = res.getDrawable(R.drawable.td_www);
    help = res.getDrawable(R.drawable.td_help);
